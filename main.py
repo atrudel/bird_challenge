@@ -88,7 +88,7 @@ def validation(model, data_loader) -> float:
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
-    print('Saved model to ' + path + '. You can run `python evaluate.py --model ' + path + '` to generate the Kaggle formatted csv file\n')
+    print('Saved model to ' + path)
 
 
 if __name__ == '__main__':
@@ -115,7 +115,8 @@ if __name__ == '__main__':
         val_accuracy = validation(model, val_loader)
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
-            best_model_path = f"{args.experiment}/model_{epoch}(acc_{best_val_accuracy:.3f}).pth"
+            best_model_path = f"{args.experiment}/model_{epoch}(acc_{best_val_accuracy:.3g}).pth"
             save_model(model, path=best_model_path)
-    print(f"The best model had a validation accuracy of {best_val_accuracy} and was saved in {best_model_path}")
+    print(f"The best model had a validation accuracy of {best_val_accuracy} and was saved in {best_model_path}\n"\
+    f"You can run `python evaluate.py --model ' + path + '` to generate the Kaggle formatted csv file\n'")
 
