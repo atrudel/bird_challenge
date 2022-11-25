@@ -1,11 +1,9 @@
 import argparse
 import os
+
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets
-from torch.autograd import Variable
-from tqdm import tqdm
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')

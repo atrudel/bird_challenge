@@ -1,7 +1,10 @@
-import zipfile
-import os
+from typing import List
 
+import pandas as pd
 import torchvision.transforms as transforms
+from torchvision import datasets
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # once the images are loaded, how do we pre-process them before being passed into the network
 # by default, we resize the images to 64 x 64 in size
@@ -14,4 +17,12 @@ data_transforms = transforms.Compose([
                                  std=[0.229, 0.224, 0.225])
 ])
 
-
+def view_class_imbalance(data_dir: str) -> None:
+    dataset = datasets.ImageFolder(data_dir)
+    labels: List[int] = dataset.targets
+    class_counts: pd.Series = pd.Series(labels).value_counts()
+    class_names: List[str] = dataset.classes
+    plt.bar(x=class_names, height=class_counts)
+    plt.title('Class count in the dataset')
+    plt.xticks(fontsize=8,rotation=45, ha='right')
+    plt.show()
