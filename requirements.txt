@@ -1,3 +1,5 @@
 torch
-torchvision
+torchvision=0.14
 tqdm
+matplotlib
+

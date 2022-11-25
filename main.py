@@ -36,11 +36,11 @@ from data import data_transforms
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
-                         transform=data_transforms),
+                         transform=data_transforms['train']),
     batch_size=args.batch_size, shuffle=True, num_workers=1)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
-                         transform=data_transforms),
+                         transform=data_transforms['val']),
     batch_size=args.batch_size, shuffle=False, num_workers=1)
 
 # Neural network and optimizer
@@ -92,9 +92,11 @@ def validation():
         100. * correct / len(val_loader.dataset)))
 
 
-for epoch in range(1, args.epochs + 1):
-    train(epoch)
-    validation()
-    model_file = args.experiment + '/model_' + str(epoch) + '.pth'
-    torch.save(model.state_dict(), model_file)
-    print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
+if __name__ == '__main__':
+    torch.manual_seed(42)
+    for epoch in range(1, args.epochs + 1):
+        train(epoch)
+        validation()
+        model_file = args.experiment + '/model_' + str(epoch) + '.pth'
+        torch.save(model.state_dict(), model_file)
+        print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
