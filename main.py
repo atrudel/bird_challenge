@@ -4,7 +4,7 @@ import os
 import torch
 import torch.optim as optim
 from torchvision import datasets
-from model import Net
+from model import pretrained_model
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    model = Net()
+    model = pretrained_model
     if use_cuda:
         print('Using GPU')
         model.cuda()
