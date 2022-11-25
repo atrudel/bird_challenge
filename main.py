@@ -5,6 +5,7 @@ import torch
 import torch.optim as optim
 from torchvision import datasets
 from model import pretrained_model
+from datetime import datetime
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -20,18 +21,24 @@ parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
-parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+parser.add_argument('--log-interval', type=int, default=10, metavar='I',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
+parser.add_argument('--name', type=str, default='exp', metavar='N', help='name of the experiment')
 
-def setup_experiment(args):
+def setup_experiment(args) -> str:
     torch.manual_seed(args.seed)
+    timestamp = datetime.now().strftime('%Y-%m-%d_%Hh%M')
+    experiment_name = f"{args.name}_{timestamp}"
+    experiment_path = f"{args.experiment}/{experiment_name}"
     # Create experiment folder
     if not os.path.isdir(args.experiment):
         print("Creating an experiment folder")
         os.makedirs(args.experiment)
-    print(f"Lauching experiment {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
+    os.makedirs(experiment_path)
+    print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
+    return experiment_path
 
 def get_data_loaders(args):
     from data import data_transforms
@@ -83,30 +90,30 @@ def validation(model, data_loader) -> float:
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
-    print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+    print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
 
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
-    print('Saved model to ' + path)
+    print(f'--> Saved model to {path}\n')
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     use_cuda = torch.cuda.is_available()
-    setup_experiment(args)
+    experiment_path = setup_experiment(args)
     train_loader, val_loader = get_data_loaders(args)
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
     model = pretrained_model
     if use_cuda:
-        print('Using GPU')
+        print('Using GPU\n')
         model.cuda()
     else:
-        print('Using CPU')
+        print('Using CPU\n')
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -118,7 +125,7 @@ if __name__ == '__main__':
         val_accuracy = validation(model, val_loader)
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
-            best_model_path = f"{args.experiment}/model_{epoch}(acc_{best_val_accuracy:.3g}).pth"
+            best_model_path = f"{experiment_path}/model_{epoch}(acc_{best_val_accuracy:.3g}).pth"
             save_model(model, path=best_model_path)
     print(f"The best model had a validation accuracy of {best_val_accuracy} and was saved in {best_model_path}\n"\
     f"You can run `python evaluate.py --model ' + path + '` to generate the Kaggle formatted csv file\n'")
