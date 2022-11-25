@@ -14,7 +14,7 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
@@ -29,7 +29,9 @@ def setup_experiment(args):
     torch.manual_seed(args.seed)
     # Create experiment folder
     if not os.path.isdir(args.experiment):
+        print("Creating an experiment folder")
         os.makedirs(args.experiment)
+    print(f"Lauching experiment {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
 
 def get_data_loaders(args):
     from data import data_transforms
@@ -107,6 +109,7 @@ if __name__ == '__main__':
         print('Using CPU')
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     best_val_accuracy = 0
     best_model_path = ''
