@@ -6,7 +6,7 @@ nclasses = 20
 IMSIZE = 256
 
 # Get pretrained Imagenet model and freeze its parameters
-pretrained_model = models.resnet18(pretrained=True)
+pretrained_model = models.resnext101_32x8d(pretrained=True)
 for param in pretrained_model.parameters():
     param.requires_grad = False
 
