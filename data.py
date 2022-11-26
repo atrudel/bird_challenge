@@ -43,7 +43,7 @@ def get_data_loader(directory: str, phase: str, batch_size: int) -> DataLoader:
         dataset,
         batch_size=batch_size,
         shuffle=(phase == 'train'),
-        num_workers=4
+        num_workers=2
     )
     return data_loader
 
