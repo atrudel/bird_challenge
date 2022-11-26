@@ -12,8 +12,8 @@ from torchvision import datasets
 
 data_transforms = {
     'train': transforms.Compose([
-        transforms.Resize((64, 64)),
-        transforms.AugMix(),
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -21,7 +21,8 @@ data_transforms = {
         )
     ]),
     'val': transforms.Compose([
-        transforms.Resize((64, 64)),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],

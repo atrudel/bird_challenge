@@ -17,8 +17,8 @@ parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.001)')
-parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
-                    help='SGD momentum (default: 0.5)')
+parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
+                    help='SGD momentum (default: 0.9)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='I',
@@ -63,11 +63,12 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
         if use_cuda:
             data, target = data.cuda(), target.cuda()
         optimizer.zero_grad()
-        output = model(data)
-        criterion = torch.nn.CrossEntropyLoss(reduction='mean')
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
+        with torch.set_grad_enabled(True):
+            output = model(data)
+            criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(data_loader.dataset),
@@ -77,16 +78,17 @@ def validation(model, data_loader) -> float:
     model.eval()
     validation_loss = 0
     correct = 0
-    for data, target in data_loader:
-        if use_cuda:
-            data, target = data.cuda(), target.cuda()
-        output = model(data)
-        # sum up batch loss
-        criterion = torch.nn.CrossEntropyLoss(reduction='mean')
-        validation_loss += criterion(output, target).data.item()
-        # get the index of the max log-probability
-        pred = output.data.max(1, keepdim=True)[1]
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+    with torch.set_grad_enabled(False):
+        for data, target in data_loader:
+            if use_cuda:
+                data, target = data.cuda(), target.cuda()
+            output = model(data)
+            # sum up batch loss
+            criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+            validation_loss += criterion(output, target).data.item()
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
@@ -122,6 +124,7 @@ if __name__ == '__main__':
     best_model_path = ''
     for epoch in range(1, args.epochs + 1):
         train(epoch, model, train_loader, optimizer, use_cuda)
+        scheduler.step()
         val_accuracy = validation(model, val_loader)
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
