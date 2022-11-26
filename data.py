@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import torchvision.transforms as transforms
 from torchvision import datasets
+from model import IMSIZE
 
 # once the images are loaded, how do we pre-process them before being passed into the network
 # by default, we resize the images to 64 x 64 in size
@@ -12,7 +13,7 @@ from torchvision import datasets
 
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
+        transforms.RandomResizedCrop(IMSIZE),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -22,7 +23,7 @@ data_transforms = {
     ]),
     'val': transforms.Compose([
         transforms.Resize(256),
-        transforms.CenterCrop(224),
+        transforms.CenterCrop(IMSIZE),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],

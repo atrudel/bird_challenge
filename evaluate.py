@@ -47,7 +47,7 @@ for f in tqdm(os.listdir(test_dir)):
         data = data.view(1, data.size(0), data.size(1), data.size(2))
         if use_cuda:
             data = data.cuda()
-        output = model(data)
+        output = model(data)[0]
         pred = output.data.max(1, keepdim=True)[1]
         output_file.write("%s,%d\n" % (f[:-4], pred))
 
