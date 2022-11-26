@@ -1,10 +1,8 @@
-from typing import List
-
-import matplotlib.pyplot as plt
-import pandas as pd
+import torch
 import torchvision.transforms as transforms
 from torchvision import datasets
 from model import IMSIZE
+from torch.utils.data import DataLoader
 
 # once the images are loaded, how do we pre-process them before being passed into the network
 # by default, we resize the images to 64 x 64 in size
@@ -13,7 +11,7 @@ from model import IMSIZE
 
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomResizedCrop(IMSIZE),
+        transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -22,8 +20,8 @@ data_transforms = {
         )
     ]),
     'val': transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(IMSIZE),
+        transforms.Resize(IMSIZE),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -32,12 +30,21 @@ data_transforms = {
     ])
 }
 
-def view_class_imbalance(data_dir: str) -> None:
-    dataset = datasets.ImageFolder(data_dir)
-    labels: List[int] = dataset.targets
-    class_counts: pd.Series = pd.Series(labels).value_counts()
-    class_names: List[str] = dataset.classes
-    plt.bar(x=class_names, height=class_counts)
-    plt.title('Class count in the dataset')
-    plt.xticks(fontsize=8,rotation=45, ha='right')
-    plt.show()
+def get_dataset(folder: str, phase:str):
+    assert phase in ['train', 'val'], "Phase must be either 'train' or 'val'"
+    return datasets.ImageFolder(
+        root=f"{folder}/{phase}_images",
+        transform=data_transforms[phase]
+    )
+def get_data_loader(directory: str, phase: str, batch_size: int) -> DataLoader:
+    assert phase in ['train', 'val'], "Phase must be either 'train' or 'val'"
+    dataset = get_dataset(directory, phase)
+    data_loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=(phase == 'train'),
+        num_workers=4
+    )
+    return data_loader
+
+

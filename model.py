@@ -3,7 +3,7 @@ import torch.nn as nn
 from torchvision import models
 
 nclasses = 20
-IMSIZE = 224
+IMSIZE = 256
 
 # Get pretrained Imagenet model and freeze its parameters
 pretrained_model = models.resnet18(pretrained=True)

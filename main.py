@@ -3,7 +3,8 @@ import os
 
 import torch
 import torch.optim as optim
-from torchvision import datasets
+
+from data import get_data_loader
 from model import pretrained_model
 from datetime import datetime
 
@@ -39,22 +40,6 @@ def setup_experiment(args) -> str:
     os.makedirs(experiment_path)
     print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
     return experiment_path
-
-def get_data_loaders(args):
-    from data import data_transforms
-
-    # Data initialization and loading
-    train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(args.data + '/train_images',
-                             transform=data_transforms['train']),
-        batch_size=args.batch_size, shuffle=True, num_workers=1)
-    val_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(args.data + '/val_images',
-                             transform=data_transforms['val']),
-        batch_size=args.batch_size, shuffle=False, num_workers=1)
-
-    return train_loader, val_loader
-
 
 
 def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
@@ -106,7 +91,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     use_cuda = torch.cuda.is_available()
     experiment_path = setup_experiment(args)
-    train_loader, val_loader = get_data_loaders(args)
+    train_loader = get_data_loader(args.data, 'train', args.batch_size)
+    val_loader = get_data_loader(args.data, 'val', args.batch_size)
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
