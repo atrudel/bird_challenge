@@ -40,7 +40,7 @@ def setup_experiment(args) -> str:
     print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
     return experiment_path
 
-def get_data_loaders(args):
+def get_data_loaders(args, subset=False):
     from data import data_transforms
 
     # Data initialization and loading
@@ -52,6 +52,9 @@ def get_data_loaders(args):
         datasets.ImageFolder(args.data + '/val_images',
                              transform=data_transforms['val']),
         batch_size=args.batch_size, shuffle=False, num_workers=1)
+    if subset:
+        train_loader = train_loader[:args.batch_size]
+        val_loader = val_loader[:args.batch_size]
 
     return train_loader, val_loader
 
