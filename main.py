@@ -16,8 +16,8 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
-                    help='learning rate (default: 0.001)')
+parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
+                    help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                     help='SGD momentum (default: 0.9)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
@@ -27,6 +27,7 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='I',
 parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 parser.add_argument('--name', type=str, default='exp', metavar='N', help='name of the experiment')
+parser.add_argument('--scheduler-steps', type=int, default=7, metavar='K', help='number of steps before scheduler changes the lr')
 
 def setup_experiment(args) -> str:
     torch.manual_seed(args.seed)
@@ -38,7 +39,7 @@ def setup_experiment(args) -> str:
         print("Creating an experiment folder")
         os.makedirs(args.experiment)
     os.makedirs(experiment_path)
-    print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}")
+    print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}, Scedul={args.scheduler_steps}steps")
     return experiment_path
 
 
@@ -104,7 +105,7 @@ if __name__ == '__main__':
         print('Using CPU\n')
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.1)
 
     best_val_accuracy = 0
     best_model_path = ''

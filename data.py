@@ -15,15 +15,11 @@ data_transforms = {
     'train': transforms.Compose([
         transforms.RandomRotation((-30, 30)),
         transforms.RandomPerspective(distortion_scale=0.3),
-        transforms.RandomResizedCrop(224, scale=(0.4, 0.9), ratio=(1,1)),
-        # transforms.Resize(IMSIZE),
-        # transforms.CenterCrop(224),
+        transforms.RandomResizedCrop(224, scale=(0.2, 1)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(0.1),
+        transforms.RandomVerticalFlip(0.2),
         transforms.GaussianBlur(9, (0.1, 2)),
-        transforms.RandomEqualize(p=0.2),
         transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1),
-
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
