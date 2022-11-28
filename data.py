@@ -1,8 +1,10 @@
 import torch
 import torchvision.transforms as transforms
-from torchvision import datasets
-from model import IMSIZE
+from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
+from torchvision import datasets
+
+from model import IMSIZE
 
 # once the images are loaded, how do we pre-process them before being passed into the network
 # by default, we resize the images to 64 x 64 in size
@@ -11,9 +13,20 @@ from torch.utils.data import DataLoader
 
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
+        transforms.RandomRotation((-30, 30)),
+        transforms.RandomPerspective(distortion_scale=0.3),
+        transforms.RandomResizedCrop(224, scale=(0.2, 1)),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(0.2),
+        transforms.GaussianBlur(9, (0.1, 2)),
+        transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1),
+        transforms.RandomEqualize(),
         transforms.ToTensor(),
+        transforms.RandomErasing(p=0.5, scale=(0.05, 0.2), ratio=(10, 20)),
+        transforms.RandomErasing(p=0.3, scale=(0.05, 0.2), ratio=(10, 20)),
+        transforms.RandomErasing(p=0.5, scale=(0.05, 0.2), ratio=(1/20, 1/10)),
+        transforms.RandomErasing(p=0.3, scale=(0.05, 0.2), ratio=(1/20, 1/10)),
+        # transforms.RandomErasing(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
@@ -22,6 +35,7 @@ data_transforms = {
     'val': transforms.Compose([
         transforms.Resize(IMSIZE),
         transforms.CenterCrop(224),
+        transforms.GaussianBlur(5, (0.1, 2)),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -36,15 +50,37 @@ def get_dataset(folder: str, phase:str):
         root=f"{folder}/{phase}_images",
         transform=data_transforms[phase]
     )
-def get_data_loader(directory: str, phase: str, batch_size: int) -> DataLoader:
+def get_data_loader(directory: str, phase: str, batch_size: int, num_workers=2) -> DataLoader:
     assert phase in ['train', 'val'], "Phase must be either 'train' or 'val'"
     dataset = get_dataset(directory, phase)
     data_loader = DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=(phase == 'train'),
-        num_workers=2
+        num_workers=num_workers
     )
     return data_loader
 
+def visualize_dataset(phase: str):
+    from visualization import imshow
+    num_images = 6
+    data_loader = get_data_loader('bird_dataset', phase, num_images, num_workers=1)
+    images_so_far = 0
+    fig = plt.figure(figsize=(10, 2 * num_images))
 
+    for i, (inputs, labels) in enumerate(data_loader):
+        for j in range(inputs.size()[0]):
+            images_so_far += 1
+            ax = plt.subplot(num_images // 2, 2, images_so_far)
+            ax.axis('off')
+            imshow(inputs.cpu().data[j])
+
+            if images_so_far > 0 and images_so_far % num_images == 0:
+                plt.tight_layout()
+                plt.show()
+                images_so_far = 0
+                text = input("Press enter to continue, q to quit")
+                if text == 'q':
+                    return
+if __name__ == '__main__':
+    visualize_dataset('train')
