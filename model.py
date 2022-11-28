@@ -7,8 +7,8 @@ IMSIZE = 256
 
 # Get pretrained Imagenet model and freeze its parameters
 pretrained_model = models.resnet18(pretrained=True)
-for param in pretrained_model.parameters():
-    param.requires_grad = False
+# for param in pretrained_model.parameters():
+#     param.requires_grad = False
 
 # Replace the classification head
 nb_features = pretrained_model.fc.in_features
