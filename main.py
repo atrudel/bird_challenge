@@ -7,7 +7,8 @@ import torch.optim as optim
 from data import get_data_loader
 from model import pretrained_model, load_model_and_unfreeze_parameters
 from datetime import datetime
-from tensorflow import summary
+from torch.utils.tensorboard import SummaryWriter
+
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -48,7 +49,7 @@ def setup_experiment(args):
     if not os.path.isdir('logs'):
         os.makedirs('logs')
     train_log_dir = 'logs/tensorboard/' + experiment_name
-    summary_writer = summary.create_file_writer(train_log_dir)
+    summary_writer = SummaryWriter(train_log_dir)
     print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}, Schedule={args.scheduler_steps}steps")
     return experiment_path, summary_writer
 
@@ -72,8 +73,7 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool, summary_wri
                 epoch, batch_idx * len(data), len(data_loader.dataset),
                 100. * batch_idx / len(data_loader), loss.data.item()))
     training_loss /= len(data_loader.dataset)
-    with summary_writer.as_default():
-        summary.scalar('train_loss', training_loss, step=epoch)
+    summary_writer.add_scalar('train_loss', training_loss, step=epoch)
     print(f'Training set: Average loss: {training_loss:.4f}')
 
 def validation(model, data_loader, summary_writer) -> float:
@@ -94,9 +94,8 @@ def validation(model, data_loader, summary_writer) -> float:
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
-    with summary_writer.as_default():
-        summary.scalar('val_loss', training_loss, step=epoch)
-        summary.scalar('val_accuracy', validation_accuracy, step=epoch)
+    summary_writer.add_scalar('val_loss', validation_loss, step=epoch)
+    summary_writer.add_scalar('val_accuracy', validation_accuracy, step=epoch)
     print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
