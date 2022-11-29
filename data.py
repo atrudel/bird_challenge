@@ -33,8 +33,8 @@ data_transforms = {
         )
     ]),
     'val': transforms.Compose([
-        transforms.Resize(IMSIZE + 32),
-        transforms.CenterCrop(IMSIZE),
+        transforms.Resize((IMSIZE, IMSIZE)),
+        # transforms.CenterCrop(IMSIZE),
         # transforms.GaussianBlur(5, (0.1, 2)),
         transforms.ToTensor(),
         transforms.Normalize(
