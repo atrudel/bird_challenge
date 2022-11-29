@@ -19,7 +19,7 @@ data_transforms = {
         transforms.RandomVerticalFlip(0.2),
         transforms.GaussianBlur(9, (0.1, 2)),
         transforms.ColorJitter(brightness=0.4, contrast=0.4),
-        # transforms.RandomEqualize(),
+        transforms.RandomEqualize(),
         transforms.ToTensor(),
         transforms.RandomErasing(p=0.3, scale=(0.05, 0.2), ratio=(10, 20)),
         transforms.RandomErasing(p=0.1, scale=(0.05, 0.2), ratio=(10, 20)),
