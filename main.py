@@ -5,7 +5,7 @@ import torch
 import torch.optim as optim
 
 from data import get_data_loader
-from model import pretrained_model
+from model import pretrained_model, load_model_and_unfreeze_parameters
 from datetime import datetime
 
 # Training settings
@@ -28,6 +28,8 @@ parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 parser.add_argument('--name', type=str, default='exp', metavar='N', help='name of the experiment')
 parser.add_argument('--scheduler-steps', type=int, default=7, metavar='K', help='number of steps before scheduler changes the lr')
+parser.add_argument('--model', type=str, default='', help='Path to the pretrained model')
+
 
 def setup_experiment(args) -> str:
     torch.manual_seed(args.seed)
@@ -97,7 +99,12 @@ if __name__ == '__main__':
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    model = pretrained_model
+    if args.model == '':
+        print("Using original checkpoint.")
+        model = pretrained_model
+    else:
+        print(f"Finetuning a pre-trained checkpoint: {args.model}")
+        model = load_model_and_unfreeze_parameters(args.model)
     if use_cuda:
         print('Using GPU\n')
         model.cuda()
