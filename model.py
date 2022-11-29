@@ -11,8 +11,7 @@ pretrained_model = timm.create_model('vit_base_patch16_384', pretrained=True)
 
 # Replace the classification head
 nb_features = list(pretrained_model.children())[-1].in_features
-pretrained_model.head = nn.Identity()
-pretrained_model.fc = nn.Linear(nb_features, nclasses)
+pretrained_model.head = nn.Linear(nb_features, nclasses)
 
 
 
