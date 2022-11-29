@@ -27,7 +27,7 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='I',
 parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 parser.add_argument('--name', type=str, default='exp', metavar='N', help='name of the experiment')
-parser.add_argument('--scheduler-steps', type=int, default=7, metavar='K', help='number of steps before scheduler changes the lr')
+parser.add_argument('--scheduler-steps', type=int, default=2, metavar='K', help='number of steps before scheduler changes the lr')
 parser.add_argument('--model', type=str, default='', help='Path to the pretrained model')
 
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
         print('Using CPU\n')
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.5, verbose=True)
 
     best_val_accuracy = 0
     best_model_path = ''
