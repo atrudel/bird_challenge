@@ -32,6 +32,7 @@ parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
 parser.add_argument('--name', type=str, default='exp', metavar='N', help='name of the experiment')
 parser.add_argument('--scheduler-steps', type=int, default=2, metavar='K', help='number of steps before scheduler changes the lr')
 parser.add_argument('--model', type=str, default='', help='Path to the pretrained model')
+parser.add_argument('--weight-decay', type=float, default=0, help='weight decay for the optimizer')
 
 
 def setup_experiment(args):
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     else:
         print('Using CPU\n')
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.5, verbose=True)
 
     best_val_accuracy = 0
