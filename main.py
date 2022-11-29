@@ -52,7 +52,7 @@ def setup_experiment(args):
     if not os.path.isdir('logs'):
         os.makedirs('logs')
     train_log_dir = 'logs/tensorboard/' + experiment_name
-    summary_writer = SummaryWriter(train_log_dir)
+    summary_writer = SummaryWriter(train_log_dir, max_queue=1)
     print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}, Schedule={args.scheduler_steps}steps")
     return experiment_path, summary_writer
 
@@ -76,7 +76,8 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool, summary_wri
                 epoch, batch_idx * len(data), len(data_loader.dataset),
                 100. * batch_idx / len(data_loader), loss.data.item()))
     training_loss /= len(data_loader.dataset)
-    summary_writer.add_scalar('train_loss', training_loss, global_step=epoch)
+    summary_writer.add_scalar('Loss/train', training_loss, global_step=epoch)
+    summary_writer.close()
     print(f'Training set: Average loss: {training_loss:.4f}')
 
 def validation(model, data_loader, summary_writer) -> float:
@@ -97,8 +98,9 @@ def validation(model, data_loader, summary_writer) -> float:
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
-    summary_writer.add_scalar('val_loss', validation_loss, global_step=epoch)
-    summary_writer.add_scalar('val_accuracy', validation_accuracy, global_step=epoch)
+    summary_writer.add_scalar('Loss/val', validation_loss, global_step=epoch)
+    summary_writer.add_scalar('Accuracy/val', validation_accuracy, global_step=epoch)
+    summary_writer.close()
     print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
