@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 import torch
@@ -44,6 +45,8 @@ def setup_experiment(args):
         print("Creating an experiment folder")
         os.makedirs(args.experiment)
     os.makedirs(experiment_path)
+    with open(f"{experiment_path}/config.json", 'w') as f:
+        json.dump(vars(args), f, )
 
     # Create log folder
     if not os.path.isdir('logs'):
@@ -73,7 +76,7 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool, summary_wri
                 epoch, batch_idx * len(data), len(data_loader.dataset),
                 100. * batch_idx / len(data_loader), loss.data.item()))
     training_loss /= len(data_loader.dataset)
-    summary_writer.add_scalar('train_loss', training_loss, step=epoch)
+    summary_writer.add_scalar('train_loss', training_loss, global_step=epoch)
     print(f'Training set: Average loss: {training_loss:.4f}')
 
 def validation(model, data_loader, summary_writer) -> float:
@@ -94,8 +97,8 @@ def validation(model, data_loader, summary_writer) -> float:
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
-    summary_writer.add_scalar('val_loss', validation_loss, step=epoch)
-    summary_writer.add_scalar('val_accuracy', validation_accuracy, step=epoch)
+    summary_writer.add_scalar('val_loss', validation_loss, global_step=epoch)
+    summary_writer.add_scalar('val_accuracy', validation_accuracy, global_step=epoch)
     print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
