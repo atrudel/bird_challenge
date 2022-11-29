@@ -47,6 +47,7 @@ def setup_experiment(args) -> str:
 
 def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
     model.train()
+    training_loss = 0
     for batch_idx, (data, target) in enumerate(data_loader):
         if use_cuda:
             data, target = data.cuda(), target.cuda()
@@ -55,12 +56,15 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
             output = model(data)
             criterion = torch.nn.CrossEntropyLoss(reduction='mean')
             loss = criterion(output, target)
+            training_loss += loss
             loss.backward()
             optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(data_loader.dataset),
                 100. * batch_idx / len(data_loader), loss.data.item()))
+    training_loss /= len(data_loader.dataset)
+    print(f'Training set: Average loss: {training_loss:.4f}')
 
 def validation(model, data_loader) -> float:
     model.eval()
@@ -83,7 +87,6 @@ def validation(model, data_loader) -> float:
     print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
-
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
