@@ -7,6 +7,7 @@ import torch.optim as optim
 from data import get_data_loader
 from model import pretrained_model, load_model_and_unfreeze_parameters
 from datetime import datetime
+from tensorflow import summary
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -31,21 +32,28 @@ parser.add_argument('--scheduler-steps', type=int, default=2, metavar='K', help=
 parser.add_argument('--model', type=str, default='', help='Path to the pretrained model')
 
 
-def setup_experiment(args) -> str:
+def setup_experiment(args):
     torch.manual_seed(args.seed)
     timestamp = datetime.now().strftime('%Y-%m-%d_%Hh%M')
     experiment_name = f"{args.name}_{timestamp}"
     experiment_path = f"{args.experiment}/{experiment_name}"
+
     # Create experiment folder
     if not os.path.isdir(args.experiment):
         print("Creating an experiment folder")
         os.makedirs(args.experiment)
     os.makedirs(experiment_path)
+
+    # Create log folder
+    if not os.path.isdir('logs'):
+        os.makedirs('logs')
+    train_log_dir = 'logs/tensorboard/' + experiment_name
+    summary_writer = summary.create_file_writer(train_log_dir)
     print(f"Lauching experiment {experiment_name} for {args.epochs} epochs with LR={args.lr}, Momentum={args.momentum}, Schedule={args.scheduler_steps}steps")
-    return experiment_path
+    return experiment_path, summary_writer
 
 
-def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
+def train(epoch: int, model, data_loader, optimizer, use_cuda: bool, summary_writer):
     model.train()
     training_loss = 0
     for batch_idx, (data, target) in enumerate(data_loader):
@@ -64,9 +72,11 @@ def train(epoch: int, model, data_loader, optimizer, use_cuda: bool):
                 epoch, batch_idx * len(data), len(data_loader.dataset),
                 100. * batch_idx / len(data_loader), loss.data.item()))
     training_loss /= len(data_loader.dataset)
+    with summary_writer.as_default():
+        summary.scalar('train_loss', training_loss, step=epoch)
     print(f'Training set: Average loss: {training_loss:.4f}')
 
-def validation(model, data_loader) -> float:
+def validation(model, data_loader, summary_writer) -> float:
     model.eval()
     validation_loss = 0
     correct = 0
@@ -84,6 +94,9 @@ def validation(model, data_loader) -> float:
 
     validation_loss /= len(data_loader.dataset)
     validation_accuracy = 100. * correct / len(data_loader.dataset)
+    with summary_writer.as_default():
+        summary.scalar('val_loss', training_loss, step=epoch)
+        summary.scalar('val_accuracy', validation_accuracy, step=epoch)
     print('Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(data_loader.dataset), validation_accuracy))
     return validation_accuracy
@@ -96,7 +109,7 @@ def save_model(model, path):
 if __name__ == '__main__':
     args = parser.parse_args()
     use_cuda = torch.cuda.is_available()
-    experiment_path = setup_experiment(args)
+    experiment_path, summary_writer = setup_experiment(args)
     train_loader = get_data_loader(args.data, 'train', args.batch_size)
     val_loader = get_data_loader(args.data, 'val', args.batch_size)
 
@@ -120,8 +133,8 @@ if __name__ == '__main__':
     best_val_accuracy = 0
     best_model_path = ''
     for epoch in range(1, args.epochs + 1):
-        train(epoch, model, train_loader, optimizer, use_cuda)
-        val_accuracy = validation(model, val_loader)
+        train(epoch, model, train_loader, optimizer, use_cuda, summary_writer)
+        val_accuracy = validation(model, val_loader, summary_writer)
         scheduler.step()
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
