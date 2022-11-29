@@ -4,6 +4,7 @@ import os
 import torch
 import torch.optim as optim
 
+
 from data import get_data_loader
 from model import pretrained_model
 from datetime import datetime
@@ -104,8 +105,8 @@ if __name__ == '__main__':
     else:
         print('Using CPU\n')
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=300)
 
     best_val_accuracy = 0
     best_model_path = ''

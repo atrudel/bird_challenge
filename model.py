@@ -1,18 +1,19 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+import timm
 
 nclasses = 20
-IMSIZE = 256
+IMSIZE = 384
 
 # Get pretrained Imagenet model and freeze its parameters
-pretrained_model = models.resnext50_32x4d(pretrained=True)
-for param in pretrained_model.parameters():
-    param.requires_grad = False
+pretrained_model = timm.create_model('vit_base_patch16_384', pretrained=True)
 
 # Replace the classification head
-nb_features = pretrained_model.fc.in_features
+nb_features = list(pretrained_model.children())[-1].in_features
+pretrained_model.head = nn.Identity()
 pretrained_model.fc = nn.Linear(nb_features, nclasses)
+
 
 
 if __name__ == '__main__':
