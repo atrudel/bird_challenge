@@ -104,7 +104,7 @@ if __name__ == '__main__':
     else:
         print('Using CPU\n')
 
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_steps, gamma=0.1)
 
     best_val_accuracy = 0
