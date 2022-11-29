@@ -14,7 +14,6 @@ from model import IMSIZE
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomRotation((-30, 30)),
-        # transforms.RandomPerspective(distortion_scale=0.3),
         transforms.RandomResizedCrop(IMSIZE, scale=(0.4, 1)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(0.2),
@@ -26,16 +25,14 @@ data_transforms = {
         transforms.RandomErasing(p=0.1, scale=(0.05, 0.2), ratio=(10, 20)),
         transforms.RandomErasing(p=0.3, scale=(0.05, 0.2), ratio=(1/20, 1/10)),
         transforms.RandomErasing(p=0.1, scale=(0.05, 0.2), ratio=(1/20, 1/10)),
-        # transforms.RandomErasing(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
         )
     ]),
     'val': transforms.Compose([
-        transforms.Resize((IMSIZE, IMSIZE)),
-        # transforms.CenterCrop(IMSIZE),
-        # transforms.GaussianBlur(5, (0.1, 2)),
+        transforms.Resize(IMSIZE + 12),
+        transforms.CenterCrop(IMSIZE),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
