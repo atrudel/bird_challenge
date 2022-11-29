@@ -121,8 +121,8 @@ if __name__ == '__main__':
     best_model_path = ''
     for epoch in range(1, args.epochs + 1):
         train(epoch, model, train_loader, optimizer, use_cuda)
-        scheduler.step()
         val_accuracy = validation(model, val_loader)
+        scheduler.step()
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
             best_model_path = f"{experiment_path}/model_{epoch}(acc_{best_val_accuracy:.3g}).pth"
